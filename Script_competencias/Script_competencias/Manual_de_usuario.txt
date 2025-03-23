@@ -1,0 +1,186 @@
+**Manual de Usuario Técnico - Web Scraping de Cotizadores**
+
+## 1. Objetivo de la Solución
+El proyecto tiene como objetivo extraer automáticamente los precios de envío de paquetes desde los cotizadores en línea de empresas de transporte chilenas (Blue Express, Chile Express, Starken, etc.). La solución permite:
+
+- Centralizar datos actualizados de tarifas.
+
+- Generar reportes comparativos para optimizar costos.
+
+- Mantener una base histórica de precios.
+
+Los datos recolectados se almacenan en la tabla ft_precios_compe de la base de datos DWHP_WEBSCRAP
+
+---
+
+## 2. Rutas de Trabajo y Organización de Archivos
+El proyecto está organizado de la siguiente manera:
+
+- **`script_principal.py`**: Ejecuta el proceso principal de scraping.
+- **Carpeta `Correos Chile`**: Contiene un archivo Correos_chile.py y un csv precios_correos_chile.csv, el .py se encarga de enviar la informacion del csv a la base de datos.
+- **Carpetas `Chile Express`, `Blue Express`, `Starken`, `Chile Express Emprendedores`**: Cada carpeta tiene un unico archivo de combinaciones origen-destino en csv y un unico archivo de logging; en todas las carpetas se encuentra un script para scrapear la página correspondiente.
+- **Archivos ETL (`ETL_1.py` - `ETL_4.py`)**: Procesamiento y transformación de datos extraídos.
+- **Archivo `Graficos.py`: Genera gráficos utilizando matplotlib.
+- **Carpeta `Resultados`**: Se encuentran gráficos comparativos simples con Python.
+- **`plantilla_base.csv`**: Formato base de los datos, donde se encuentran los porcentajes de las rutas , y el tipo de ruta.
+- **`entregable.xlsx`**: Archivo de salida con datos consolidados. Se encuentra en la carpeta Resultados
+
+---
+
+## 3. Copias de Códigos por Competidores
+Cada empresa tiene su propio script de scraping:
+- `blue_express.py`: Captura precios de Blue Express.
+- `chile_express.py`: Scrapea los datos de Chile Express.
+- `correos_chile.py`: Extrae precios de Correos Chile.
+- `starken.py`: Obtiene cotizaciones de Starken.
+-`chile_express_emprendedores.py`:Scrapea los precios de Chile Express del mundo emprendedores.
+
+Cada script maneja la estructura específica de cada sitio web y ajusta la extracción en función de los cambios en su HTML.
+
+---
+
+## 4. Configuración y Dependencias
+
+Dependencias a instalar: 
+
+pip install playwright pandas openpyxl sqlalchemy
+
+playwright install
+
+---
+
+## 5. Proceso de Ejecución
+Para correr el scraper principal:
+```bash
+python script_principal.py
+```
+Los datos se guardarán en la carpeta correspondiente según la empresa procesada.
+
+---
+
+## 6. Manejo de Errores y Continuidad Operativa
+- **Errores posibles**:
+  - Cambios en el HTML de las páginas: Revisar el código y ajustar los selectores.
+  - Bloqueos por IP: Implementar el uso de una vpn o de alguna proxy.
+- **Soluciones**:
+  - Verificar logs generados.
+  - Ejecutar manualmente cada scraper para detectar problemas específicos.
+
+-En caso de querer ver visualmente el proceso de scraping se puede modificar la linea que dice "headless=True" por "headless=False", de esta manera si hay algun error en un código se puede detectar facilmente con la interfaz gráfica activa.
+
+---
+
+## 7. Consejos y Tips sobre las Páginas Scrapeadas
+- Evitar realizar demasiadas solicitudes en poco tiempo para evitar errores y bloqueos.
+- Considerar que en un futuro cercano las páginas web pueden añadir mensajes o anuncios flotantes como algun anuncio de descuento o un mensaje para aceptar cookies, en caso de que esto pase hay que prevenir y cerrar estos mensajes en el código.
+- Monitorear periódicamente los cambios en las páginas web.
+- Hay que considerar que en el proceso de scrapeo siempre se tienen que hacer pausas entre cada acción, esto con el objetivo de que la página cargue correctamente y reaccione correctamente, y se de el tiempo para recopilar los datos e interactuar de forma correcta con la página web; estas consideraciones deben tenerse en cuenta si se quisiera modificar algun código o incluir un código para alguna otra competencia como puede ser "DHL".
+-Un tip para poder scrapear una página web desde 0 , por si en un futuro una página modifica por completo el cotizador o por si se desea incluir otra empresa al proyecto, es utilizar el comando "playwright codegen https://www.correos.cl/cotizador", reemplazando el link por el cotizador que se quiere scrapear, este comando lo que hace es convertir todas las acciones realizadas en la página a código python, todo el código se visualiza y se puede copiar desde Playwright Inspector. Con este comando se puede obtener un código básico y simple para generar la base del scraping.
+---
+
+
+## 8. Aquí van las instrucciones por si desean incluir más combinaciones a cada página.
+
+Se debe considerar que dependiendo de la página, hay comunas que se escriben diferente por lo que existe un csv de combinaciones diferente por cada web.
+Por lo que si se quieren agregar combinaciones origen-destino se deben incluir en cada csv de cada carpeta de las distintas empresas. Excepto Correos de Chile, esta carpeta no tiene este archivo.
+Estos archivos tienen la forma "combinaciones_origen_destino....csv" y se encuentran en cada carpeta.
+
+Caso 1 Blue Express: 
+- Para agregar combinaciones de origen-destino a Blue, se debe considerar que las comunas tienen "Avrebiaturas", estas abreviaturas son las que importan.
+Entonces para agregar una nueva combinación, se debe  agregar el nombre de La comuna origen y destino (no importa como esten escritas), y lo más importante es escribir correctamente la abreviatura de estas comunas en sus respectivas columnas, estas abreviaturas las anexare al fondo de este txt.
+
+Caso 2 Chile Express y Chile Express Emprendedores:
+- Para agregar combinaciones de origen-destino a Chile Express se deben escribir en Mayusculas, sin tildes y sin "Ñ", estas comunas se deben escribir tal cual como aparecen en el cotizador de la página.
+Cabe recalcar que en este caso que la comuna Santiago se escribe como SANTIAGO CENTRO.
+
+Caso 3 Starken:
+- Para agregar combinaciones de origen-destino a Starken se deben escribir en Mayusculas, sin tildes y sin "Ñ", tal cual como aparecen en el cotizador de Starken.
+
+Caso 4 Correos de Chile:
+-Este es un caso especial, ya que no importa mucho como se escriba el origen y destino, pero en caso de añadir un origen y destino, tambien se tienen que añadir los precios asociados. Esto se tiene que hacer en el archivo "precios_correos_chile.csv"
+
+DETALLES IMPORTANTES A CONSIDERAR:
+-Algo muy importante que puede provocar fallos son los espacios en blanco, al agregar las comunas o las abreviaturas mencionadas no pueden dejarse espacios despues de escribir la comuna, por ejemplo si se escribe "SANTIAGO " en lugar de "SANTIAGO" el código va a fallar.
+
+-En caso de añadir más combinaciones origen-destino, estas tambien deben ser incluidas en plantilla_base.csv con su respectivo porcentaje y lejanía (intra, cerca o lejos), de lo contrario el proceso de ETL va a fallar.
+
+-Si se agrega una combinacion, se tienen que agregar a  cada csv de cada empresa, y tambien se tiene que incluir en plantilla_base.csv
+
+---
+## 9. Acerca de los códigos de scraping de cada página web
+
+-Los códigos estan comentados y modularizados en funciones.
+-Dependiendo de la página lo más confuso pueden ser las funciones principales (main).
+-En todos los códigos se utiliza playwright.
+
+--
+
+## 10. Acerca de las conexiones de cada código con la base de datos
+-Para las conexiones a la base de datos se utiliza la librería sqlalchemy, y para hacer la conexión se utiliza especificamente "create_engine". 
+
+--
+
+## 11. Sobre la tabla de la base de datos
+
+-En este proyecto, solo se utiliza una tabla llamada ft_precios_compe, la cual pertenece a la base de datos DWHP_POS_CCH; para hacer las querys, se recomienda filtrar por rut y fecha para recopilar los precios asociados a una empresa, la fecha tiene el formato "timestamp whitout time zone". A continuación presento un ejemplo de query : 
+
+SELECT * 
+FROM ft_precios_compe
+WHERE rut = '99.999.999-9' 
+AND fecha = '2025-02-18 00:00:00';
+
+Adicionalmente adjunto aquí los ruts de las empresas:
+96.938.840-5 : Blue Express
+96.794.750-4 : Starken
+60.503.000-9 : Correos Chile
+96.756.430-3 : Chile Express
+99.999.999-9 : Chile Express Emprendedores
+
+--
+
+## 12. Sobre la ETL
+-La ETL fue dividida en 4 códigos.py, y esta ETL lo que hace es recopilar la información de la base de datos mediante querys, para luego hacer el calculo de las ponderaciones respectivas y posteriormente hacer las comparaciones de precios entre las distintas empresas; todo este proceso se muestra y se presenta en excel.
+
+-En la ETL_1.py se crea la hoja "Precios" en el excel "entregable" dentro de la carpeta "Resultados", dentro de la hoja creada, se recopilan los datos de interes mediante querys, cada query tendrá un total de 124 filas, es importante mencionar que las querys deben ordenarse con el "ORDER BY orden_original ASC", de lo contrario el proceso de ETL fallará. Cabe mencionar que en este código se utiliza "plantilla_base.csv" de donde se recopilan los porcentajes de las rutas y el tipo de ruta. Todos los datos recopilados se muestran en la hoja "Precios".
+
+-En la ETL_2.py se crea la hoja "Ponderaciones domicilio", en esta hoja se calculan las ponderaciones de los envíos a domicilio de cada tipo de ruta y de cada empresa, en base a la hoja "Precios". Aquí se muestran las ponderaciones y se muestra la comparación entre Correos Chile y sus competidores.
+
+-En la ETL_3.py se crea la hoja "Ponderaciones sucursal", en este código se hace lo mismo que en la ETL_2.py pero enfocado en los envíos a sucursal.
+
+-En la ETL_4.py se crea la hoja  "CH express emprendedores", en esta hoja se muestran las ponderaciones calculadas de los precios de Chile Express Emprendedores.
+
+--
+
+##13. Sobre la Creación de gráficos
+
+-En cuanto a los gráficos, estos se crean en el código "Graficos.py" y se guardan en la carpeta "Resultados", en este código se grafican comparaciones de precios de envios a sucursal y a domicilio; para la creación de estos gráficos se utiliza el excel "entregable.xlsx"
+
+--
+
+## 14. Ultimos detalles a considerar
+
+-Si se automatiza la ejecución del código periodicamente, se debe considerar que esta periodicidad debe ser igual o mayor a 24 horas, ya que en la tabla de la base de datos, estos datos se almacenan por fecha (YY-MM-DD).
+
+-En caso de que se cambien los precios de Correos Chile, se deben modificar en el csv precios_correos_chile.csv, ya que para esta página no se pudo culminar el scraping debido a la detección de bots de captcha.
+
+-Por último, cabe destacar que cualquier cambio en las páginas web de los cotizadores probablemente provocará que el código falle; y si alguna página esta caída el código también fallará. Hay que mencionar que si un cotizador cambia, se puede modificar el código segun la carpeta de la empresa.
+
+
+
+Caso para cambiar de cuenta de usuario en Blue Express:
+-Si se quisiera cambiar la cuenta de usuario, se debe ir alfinal del código blue_express.py y ahí se debe cambiar el usuario y contraseña.
+
+
+
+
+
+
+***************************
+Avrebiaturas de Blue Express:
+-Adjunto las abreviaturas con su comuna respectiva recopilada del html de la página.
+
+<select class="bx-form-input-select bx-form-input-select--with-value"><option value="" disabled="">Origen</option><option value="ABO">Algarrobo</option><option value="ALH">Alhué</option><option value="AOO">Alto Biobío</option><option value="AHP">Alto Hospicio</option><option value="ADC">Alto del Carmen</option><option value="ACD">Ancud</option><option value="ACO">Andacollo</option><option value="ZOL">Angol</option><option value="ANF">Antofagasta</option><option value="ANT">Antuco</option><option value="ATC">Antártica</option><option value="ARA">Arauco</option><option value="ARI">Arica</option><option value="WPA">Aysén</option><option value="ZBU">Buin</option><option value="BLN">Bulnes</option><option value="CDO">Cabildo</option><option value="HOR">Cabo de Hornos</option><option value="CRO">Cabrero</option><option value="CJC">Calama</option><option value="CBU">Calbuco</option><option value="CLR">Caldera</option><option value="ZLC">Calera</option><option value="CDT">Calera de Tango</option><option value="CLG">Calle Larga</option><option value="CAM">Camarones</option><option value="CMN">Camiña</option><option value="CNE">Canela</option><option value="CRH">Carahue</option><option value="CRT">Cartagena</option><option value="CBC">Casablanca</option><option value="CTR">Castro</option><option value="CAT">Catemu</option><option value="CQE">Cauquenes</option><option value="CTE">Cañete</option><option value="RRI">Cerrillos</option><option value="CNV">Cerro Navia</option><option value="ZCN">Chaitén</option><option value="CNC">Chanco</option><option value="CHN">Chañaral</option><option value="CYE">Chiguayante</option><option value="CCH">Chile Chico</option><option value="YAI">Chillán</option><option value="YAV">Chillán Viejo</option><option value="CHB">Chimbarongo</option><option value="CHL">Cholchol</option><option value="ZCH">Chonchi</option><option value="CHE">Chépica</option><option value="CNS">Cisnes</option><option value="CQU">Cobquecura</option><option value="CMO">Cochamó</option><option value="CCL">Cochrane</option><option value="ZDE">Codegua</option><option value="ZOU">Coelemu</option><option value="CUH">Coihueco</option><option value="CNO">Coinco</option><option value="CLB">Colbún</option><option value="COE">Colchane</option><option value="COL">Colina</option><option value="CPI">Collipulli</option><option value="CTO">Coltauco</option><option value="COB">Combarbalá</option><option value="CCP">Concepción</option><option value="CNH">Conchalí</option><option value="CON">Concón</option><option value="CTT">Constitución</option><option value="CTU">Contulmo</option><option value="CPO">Copiapó</option><option value="COQ">Coquimbo</option><option value="CRN">Coronel</option><option value="ZCR">Corral</option><option value="GXQ">Coyhaique</option><option value="NCO">Cunco</option><option value="CCC">Curacautín</option><option value="CVI">Curacaví</option><option value="CVL">Curaco de Vélez</option><option value="ZHE">Curanilahue</option><option value="RRH">Curarrehue</option><option value="CUR">Curepto</option><option value="CCO">Curicó</option><option value="DLE">Dalcahue</option><option value="DAG">Diego de Almagro</option><option value="DNE">Doñihue</option><option value="EBO">El Bosque</option><option value="YCX">El Carmen</option><option value="ZTE">El Monte</option><option value="EQO">El Quisco</option><option value="ETB">El Tabo</option><option value="EMP">Empedrado</option><option value="ERL">Ercilla</option><option value="ECE">Estación Central</option><option value="FLO">Florida</option><option value="FIE">Freire</option><option value="FRN">Freirina</option><option value="FSA">Fresia</option><option value="FRT">Frutillar</option><option value="FTF">Futaleufú</option><option value="FTR">Futrono</option><option value="GAL">Galvarino</option><option value="LGR">General Lagos</option><option value="GEA">Gorbea</option><option value="GRA">Graneros</option><option value="GCA">Guaitecas</option><option value="HJS">Hijuelas</option><option value="HLH">Hualaihué</option><option value="HNE">Hualañé</option><option value="HLP">Hualpén</option><option value="HLQ">Hualqui</option><option value="HRA">Huara</option><option value="HCO">Huasco</option><option value="HRB">Huechuraba</option><option value="ILL">Illapel</option><option value="IDP">Independencia</option><option value="IQQ">Iquique</option><option value="IDM">Isla de Maipo</option><option value="IPC">Isla de Pascua</option><option value="JFR">Juan Fernández</option><option value="LCN">La Cisterna</option><option value="LCZ">La Cruz</option><option value="LAE">La Estrella</option><option value="LFD">La Florida</option><option value="LGJ">La Granja</option><option value="LHC">La Higuera</option><option value="LLC">La Ligua</option><option value="LPT">La Pintana</option><option value="LRN">La Reina</option><option value="LSC">La Serena</option><option value="ZLU">La Unión</option><option value="LRO">Lago Ranco</option><option value="LVE">Lago Verde</option><option value="LBL">Laguna Blanca</option><option value="LLJ">Laja</option><option value="LSG">Lampa</option><option value="LNC">Lanco</option><option value="LCB">Las Cabras</option><option value="LCD">Las Condes</option><option value="LTR">Lautaro</option><option value="ZLB">Lebu</option><option value="LCT">Licantén</option><option value="LIC">Limache</option><option value="LNR">Linares</option><option value="LTU">Litueche</option><option value="LLY">Llaillay</option><option value="LLQ">Llanquihue</option><option value="LBR">Lo Barnechea</option><option value="LEP">Lo Espejo</option><option value="LPR">Lo Prado</option><option value="LOL">Lolol</option><option value="LOC">Loncoche</option><option value="LGV">Longaví</option><option value="LQY">Lonquimay</option><option value="LOB">Los Andes</option><option value="LAG">Los Lagos</option><option value="LMU">Los Muermos</option><option value="SUS">Los Sauces</option><option value="LVL">Los Vilos</option><option value="LAL">Los Álamos</option><option value="LSQ">Los Ángeles</option><option value="LOT">Lota</option><option value="LUM">Lumaco</option><option value="MCH">Machalí</option><option value="MAC">Macul</option><option value="MAI">Maipú</option><option value="ZML">Malloa</option><option value="MRH">Marchihue</option><option value="MQA">Mariquina</option><option value="MAE">María Elena</option><option value="MPO">María Pinto</option><option value="ZMA">Maule</option><option value="MAU">Maullín</option><option value="MJS">Mejillones</option><option value="MLP">Melipeuco</option><option value="ZMP">Melipilla</option><option value="ZMO">Molina</option><option value="MPC">Monte Patria</option><option value="SFM">Mostazal</option><option value="MUL">Mulchén</option><option value="MFL">Máfil</option><option value="NAC">Nacimiento</option><option value="NGA">Nancagua</option><option value="PNT">Natales</option><option value="NAV">Navidad</option><option value="NRE">Negrete</option><option value="NIN">Ninhue</option><option value="NOG">Nogales</option><option value="NIP">Nueva Imperial</option><option value="OAL">Olivar</option><option value="OLL">Ollagüe</option><option value="OLM">Olmué</option><option value="ZOS">Osorno</option><option value="OVL">Ovalle</option><option value="OHG">O’higgins</option><option value="PHT">Padre Hurtado</option><option value="PCS">Padre Las Casas</option><option value="PHO">Paiguano</option><option value="PAI">Paillaco</option><option value="ZPN">Paine</option><option value="PLE">Palena</option><option value="PLA">Palmilla</option><option value="PGP">Panguipulli</option><option value="PNQ">Panquehue</option><option value="PPO">Papudo</option><option value="PDS">Paredones</option><option value="PRR">Parral</option><option value="PAC">Pedro Aguirre Cerda</option><option value="PLC">Pelarco</option><option value="PEL">Pelluhue</option><option value="ZPC">Pemuco</option><option value="PEH">Pencahue</option><option value="PCO">Penco</option><option value="ZPE">Peralillo</option><option value="PQO">Perquenco</option><option value="PTK">Petorca</option><option value="PEO">Peumo</option><option value="PFL">Peñaflor</option><option value="PNL">Peñalolén</option><option value="OPC">Pica</option><option value="PHA">Pichidegua</option><option value="PMU">Pichilemu</option><option value="PNO">Pinto</option><option value="PIR">Pirque</option><option value="PQN">Pitrufquén</option><option value="PLL">Placilla</option><option value="49H">Portezuelo</option><option value="ZPR">Porvenir</option><option value="PAM">Pozo Almonte</option><option value="PRI">Primavera</option><option value="PRO">Providencia</option><option value="PCV">Puchuncaví</option><option value="ZPU">Pucón</option><option value="PUD">Pudahuel</option><option value="PAL">Puente Alto</option><option value="PMC">Puerto Montt</option><option value="PCY">Puerto Octay</option><option value="ZPV">Puerto Varas</option><option value="PMQ">Pumanque</option><option value="PTQ">Punitaqui</option><option value="PUQ">Punta Arenas</option><option value="PQE">Puqueldón</option><option value="PRE">Purranque</option><option value="PUR">Purén</option><option value="PUT">Putaendo</option><option value="PTR">Putre</option><option value="PYH">Puyehue</option><option value="QLE">Queilén</option><option value="QLN">Quellón</option><option value="QUE">Quemchi</option><option value="QCO">Quilaco</option><option value="QLC">Quilicura</option><option value="QLO">Quilleco</option><option value="QTA">Quillota</option><option value="QLL">Quillón</option><option value="QPE">Quilpué</option><option value="QCH">Quinchao</option><option value="QTN">Quinta Normal</option><option value="QCC">Quinta de Tilcoco</option><option value="QTO">Quintero</option><option value="QIH">Quirihue</option><option value="RCG">Rancagua</option><option value="RNQ">Ranquil</option><option value="RAU">Rauco</option><option value="RLT">Recoleta</option><option value="RNA">Renaico</option><option value="REN">Renca</option><option value="ZRG">Rengo</option><option value="REQ">Requínoa</option><option value="RTR">Retiro</option><option value="RDA">Rinconada</option><option value="RML">Romeral</option><option value="RBN">Río Bueno</option><option value="RCL">Río Claro</option><option value="RHU">Río Hurtado</option><option value="RIB">Río Ibáñez</option><option value="RNC">Río Negro</option><option value="RVE">Río Verde</option><option value="ZPS">Saavedra</option><option value="SFA">Sagrada Familia</option><option value="SCA">Salamanca</option><option value="SNT">San Antonio</option><option value="SBD">San Bernardo</option><option value="SCS">San Carlos</option><option value="STE">San Clemente</option><option value="SEN">San Esteban</option><option value="SFB">San Fabián</option><option value="SFP">San Felipe</option><option value="SFR">San Fernando</option><option value="SGG">San Gregorio</option><option value="SIG">San Ignacio</option><option value="SJA">San Javier</option><option value="SJQ">San Joaquín</option><option value="SJS">San José de Maipo</option><option value="SJD">San Juan de la Costa</option><option value="SMG">San Miguel</option><option value="SNL">San Nicolás</option><option value="SPL">San Pablo</option><option value="SPO">San Pedro</option><option value="SPX">San Pedro de Atacama</option><option value="SPP">San Pedro de la Paz</option><option value="SRF">San Rafael</option><option value="SRN">San Ramón</option><option value="SRO">San Rosendo</option><option value="SVT">San Vicente</option><option value="SBB">Santa Bárbara</option><option value="ZSC">Santa Cruz</option><option value="SJN">Santa Juana</option><option value="SRI">Santa María</option><option value="SCL">Santiago Centro</option><option value="SDC">Santo Domingo</option><option value="SGD">Sierra Gorda</option><option value="TNT">Talagante</option><option value="ZCA">Talca</option><option value="ZTO">Talcahuano</option><option value="TTL">Taltal</option><option value="ZCO">Temuco</option><option value="TEN">Teno</option><option value="TEO">Teodoro Schmidt</option><option value="TRM">Tierra Amarilla</option><option value="TIL">Tiltil</option><option value="PTI">Timaukel</option><option value="TUA">Tirúa</option><option value="TOC">Tocopilla</option><option value="TOL">Toltén</option><option value="TMC">Tomé</option><option value="TRP">Torres del Paine</option><option value="TRT">Tortel</option><option value="ZEN">Traiguén</option><option value="YTG">Treguaco</option><option value="TCP">Tucapel</option><option value="ZAL">Valdivia</option><option value="VAL">Vallenar</option><option value="VAP">Valparaíso</option><option value="VCH">Vichuquén</option><option value="VIC">Victoria</option><option value="VCA">Vicuña</option><option value="VIL">Vilcún</option><option value="VGE">Villa Alegre</option><option value="VIA">Villa Alemana</option><option value="VRR">Villarrica</option><option value="VTC">Vitacura</option><option value="KNA">Viña del Mar</option><option value="YBB">Yerbas Buenas</option><option value="ZYU">Yumbel</option><option value="YGY">Yungay</option><option value="ZAR">Zapallar</option><option value="NYY">Ñiquén</option><option value="NNA">Ñuñoa</option></select>
+
+
+Este documento está diseñado para facilitar la continuidad operativa del sistema de scraping. Para más detalles o cualquier duda, contactar a Benjamín Espinoza (+56948610652).
+
