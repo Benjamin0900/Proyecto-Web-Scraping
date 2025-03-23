@@ -165,6 +165,6 @@ if __name__ == "__main__":
         run(
             playwright,
             email="benjamin.e.p.gaspar@gmail.com",
-            password="CorreosChile1234",
+            password="",
             combinaciones_path= os.path.join(os.path.dirname(__file__), "combinaciones_origen_destino.csv")
         )
